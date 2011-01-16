@@ -1,0 +1,5 @@
+miniforth
+
+at the moment, there is only a minimal vm implemented.
+see as.c and vm.c to see the assembler and the vm
+source code.
