@@ -6,16 +6,17 @@ struct vm* alloc_vm(int memsize, int stacksize)
 	if (v == NULL)
 		error("Unable to allocate virtual machine");
 
-	v->mem = calloc(memsize, sizeof(int));
+	v->mem = calloc(memsize, sizeof(char));
 	if (v->mem == NULL)
 		error("Unable to allocate memory for vm");
 	
-	v->stack = calloc(stacksize, sizeof(int));
+	v->stack = calloc(stacksize, sizeof(char));
 	if (v->stack == NULL)
 		error("Unable to allocate memory for vm stack");
 
 	v->memsize = memsize;
 	v->stacksize = stacksize;
+	v->stackoffset = -1;
 	return v;
 }
 
@@ -24,7 +25,7 @@ int load_file(struct vm *v, FILE *fd)
 	if (fd == NULL || v == NULL)
 		error("Unable to load file");
 	
-	fread(v->mem, sizeof(char), v->memsize, fd);
+	fread(v->mem, sizeof(int), v->memsize, fd);
 }
 
 int run(struct vm *v)
@@ -39,18 +40,16 @@ int run(struct vm *v)
 				break;
 
 			case PUSH:
-				puts("ho");
 				if (v->stackoffset >= v->stacksize) 
 					error("stack overflow");
 			
 				ip++;
-				printf("%d", *ip);
-				v->stack[v->stackoffset] = *ip;
 				v->stackoffset++;
+				v->stack[v->stackoffset] = *ip;
 				break;
 
 			case POP:
-				if (v->stackoffset == 0)
+				if (v->stackoffset < 0)
 					error("stack underflow");
 
 				v->stackoffset--;
@@ -60,6 +59,28 @@ int run(struct vm *v)
 				/* a debug instruction - print the top of the stack */
 				printf("%d\n", v->stack[v->stackoffset]);
 				break;
+
+			case INC:
+				v->stack[v->stackoffset]++;
+				break;
+
+			case DEC:
+				v->stack[v->stackoffset]--;
+				break;
+
+			case CALL:
+				/* save the previous instruction pointer */
+				if (v->stackoffset >= v->stacksize) 
+					error("stack overflow");
+			
+				v->stackoffset++;
+				v->stack[v->stackoffset] = (int) ip;
+
+				//yylex();
+				//ip = atoi(
+				break;
+
+
 		}
 
 		ip++;

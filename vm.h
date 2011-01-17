@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-enum opcodes {NOP = 0, PUSH, POP, ADD, CALL, RET, DPRINT};
+enum opcodes {NOP = 0, PUSH, POP, ADD, CALL, RET, DPRINT, INC, DEC};
 
 struct vm {
 	int *mem;
