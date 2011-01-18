@@ -1,13 +1,12 @@
-#include "error.h"
+#include "fail.h"
 
-void error(char *fmt, ...)
+void fail(char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
 	vprintf(fmt, ap);
-	va_end(ap);
 	puts("");
-	fflush(stdout);
+	va_end(ap);
 	exit(EXIT_FAILURE);
 }
 

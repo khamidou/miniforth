@@ -1,10 +1,10 @@
-OBJS=vm.o main.o error.o
+OBJS=vm.o main.o fail.o
 CFLAGS=-c -g
 
 vm_and_as: vm as
 
-as: as.o lexer error.o
-	$(CC) as.o aslexer.o -o as -lfl
+as: as.o lexer fail.o
+	$(CC) as.o aslexer.o fail.o -o as -lfl
 
 as.o: as.c
 	$(CC) $(CFLAGS) as.c
@@ -23,8 +23,8 @@ main.o: main.c
 	$(CC) $(CFLAGS) main.c
 
 
-error.o: error.c error.h
-	$(CC) $(CFLAGS) error.c
+fail.o: fail.c fail.h
+	$(CC) $(CFLAGS) fail.c
 
 clean:
 	rm *.o

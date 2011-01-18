@@ -1,13 +1,14 @@
-/* a very crude assembler for the vm - it's one pass and
- * spits out error messages the ken thompson way
+/* a very crude assembler for the vm - 
+ * it spits out fail messages the ken thompson way
  * */
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 #include "vm.h"
 #include "tokens.h"
-#include "error.h"
+#include "fail.h"
 
 extern FILE* yyin;
 extern char* yytext;
@@ -27,7 +28,7 @@ struct label* alloc_label(char *name, int offset) {
 	struct label* la = calloc(1, sizeof(struct label));
 
 	if (la == NULL)
-		error("Unable to allocate memory for one label");
+		fail("Unable to allocate memory for one label");
 
 	la->name = strdup(name);
 	la->offset = offset;
@@ -60,27 +61,37 @@ int writeint(int val, FILE* fp) {
 
 	if (fp == NULL)
 		return -1;
+	return fwrite(&val, sizeof(int), 1, fp);
+}
 
-	/* comes from:
-	 * http://stackoverflow.com/questions/1105938/writing-and-reading-long-int-value-in-c-code/1105961#1105961
-	 */
+/* the first pass only scans the file for labels */
+int first_pass() {
+	int t;
+	int current_offset = 0; /* the offset in the generated binary file */
+	int s;
+	struct label *l;
 
-	unsigned char c1 =(val >>  0) & 0xff;
-	unsigned char c2 = (val >>  8) & 0xff;
-	unsigned char c3 = (val >> 16) & 0xff;
-	unsigned char c4 = (val >> 24) & 0xff;
+	while((t = yylex()) != -1) {
+		switch(t) {
+			case T_LABEL:
+				s = strlen(yytext);
+				yytext[s-1] = '\0'; /* get rid of the ':' */
 
-	fputc(c1, fp);
-	fputc(c2, fp);
-	fputc(c3, fp);
-	fputc(c4, fp);
-
-	return 0;
+				l = alloc_label(yytext, current_offset);
+				append_label(l, label_head);
+				break;
+			default:
+				current_offset++;
+				break;
+		}
+	}
 }
 
 int parse() {
 	int t;
 	int current_offset = 0; /* the offset in the generated binary file */
+	int s;
+	struct label *l;
 
 	while((t = yylex()) != -1) {
 		switch(t) {
@@ -115,6 +126,29 @@ int parse() {
 				writeint(DEC, outfp);
 				break;
 
+			case T_LABEL:
+				break;
+
+			case T_CALL:
+				yylex();
+				l = search_label(yytext);
+				if (l == NULL)
+					fail("the label %s doesn't exists", yytext);
+
+				writeint(CALL, outfp);
+				writeint(l->offset, outfp);
+				break;
+
+			case T_JMP:
+				yylex();
+				l = search_label(yytext);
+				if (l == NULL)
+					fail("the label %s doesn't exists", yytext);
+
+				writeint(JMP, outfp);
+				writeint(l->offset, outfp);
+				break;
+
 			default:
 				printf("unexpected %d in input", t);
 				break;
@@ -126,19 +160,14 @@ int parse() {
 
 int main(int argc, char **argv)
 {
-	if (argc > 2) {
+	if (argc != 2) {
 		puts("as file.as");
 		exit(0);
 	}
 
-	if (argc == 1) {
-		yyin = stdin;	
-	} else {
-		yyin = fopen(filename, "r");
-
-		if (yyin == NULL)
-			error("Unable to open input file");
-	}
+	yyin = fopen(argv[1], "r");
+	if (yyin == NULL)
+		error("Unable to open input file");
 
 	outfp = fopen("a.bin", "w+");
 	if (outfp == NULL)
@@ -146,6 +175,10 @@ int main(int argc, char **argv)
 
 	label_head = alloc_label("", 0);
 
+	first_pass();
+	fclose(yyin);
+	fopen(argv[1], "r");
+	yyrestart(yyin);
 	parse();
 }
 
