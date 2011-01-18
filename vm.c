@@ -81,7 +81,7 @@ int run(struct vm *v)
 
 			case JMP:
 				ip++;
-				ip = v->stack + (*ip);
+				ip = v->mem + (*ip) - 1; /* because the pointer gets automatically incremented */
 				break;
 
 		}
