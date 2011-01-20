@@ -2,6 +2,8 @@
 
 struct vm* alloc_vm(int memsize, int stacksize)
 {
+	int callstacksize = stacksize;
+
 	struct vm *v = calloc(1, sizeof(struct vm));
 	if (v == NULL)
 		fail("Unable to allocate virtual machine");
@@ -14,9 +16,15 @@ struct vm* alloc_vm(int memsize, int stacksize)
 	if (v->stack == NULL)
 		fail("Unable to allocate memory for vm stack");
 
+	v->callstack = calloc(callstacksize, sizeof(char));
+	if (v->callstack == NULL)
+		fail("Unable to allocate memory for vm call stack");
+
 	v->memsize = memsize;
 	v->stacksize = stacksize;
 	v->stackoffset = -1;
+	v->callstacksize = callstacksize;
+	v->callstackoffset = -1;
 	return v;
 }
 
@@ -70,13 +78,25 @@ int run(struct vm *v)
 
 			case CALL:
 				/* save the previous instruction pointer */
-				if (v->stackoffset >= v->stacksize) 
-					fail("stack overflow");
+				if (v->callstackoffset >= v->callstacksize) 
+					fail("call stack overflow");
 			
-				v->stackoffset++;
-				v->stack[v->stackoffset] = (int) ip;
+				v->callstackoffset++;
+				v->callstack[v->callstackoffset] = (int) ip;
 				ip++;
-				ip = v->stack + (*ip);
+				ip = v->mem + (*ip) - 1;
+				break;
+
+			case RET:
+				/* get ip from the stack. it must be the thing just before
+				 * the top of the stack - it implies that programs must return
+				 * one and only one return value
+				 */
+				if (v->callstackoffset < 0) 
+					fail("call stack underflow");
+			
+				ip = v->callstack[v->callstackoffset];
+				v->callstackoffset--;
 				break;
 
 			case JMP:

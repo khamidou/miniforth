@@ -12,6 +12,9 @@ struct vm {
 	int *stack;
 	int stacksize;
 	int stackoffset;
+	int *callstack;
+	int callstacksize;
+	int callstackoffset;
 };
 
 struct vm* alloc_vm(int memsize, int stacksize);

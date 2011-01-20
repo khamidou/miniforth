@@ -1,3 +1,4 @@
+;; ceci est un commentaire
 push 23
 dprint
 jmp t

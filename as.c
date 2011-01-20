@@ -13,6 +13,7 @@
 extern FILE* yyin;
 extern char* yytext;
 extern int yylex();
+extern int yylineno;
 FILE *outfp;
 
 /* labels are represented by a linked list */
@@ -139,6 +140,10 @@ int parse() {
 				writeint(l->offset, outfp);
 				break;
 
+			case T_RET:
+				writeint(RET, outfp);
+				break;
+
 			case T_JMP:
 				yylex();
 				l = search_label(yytext);
@@ -150,7 +155,7 @@ int parse() {
 				break;
 
 			default:
-				printf("unexpected %d in input", t);
+				fail("unexpected %s in input at line %d", yytext, yylineno);
 				break;
 		}
 
