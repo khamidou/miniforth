@@ -10,7 +10,6 @@
 ;              BEGIN(in_comment);
 <in_comment>\n   BEGIN(INITIAL);
 <in_comment>[^\n]+    // eat comment
-<in_comment>;       // eat the lone ';'
 
 
 
@@ -23,6 +22,8 @@
 "call"		{ return T_CALL;	}
 "ret"		{ return T_RET;		}
 "jmp"		{ return T_JMP;		}
+"db"		{ return T_DB;		}
+"times"		{ return T_TIMES;	}
 [ \t\n]+ 	/* ignore whitespace */
 
 [0-9]+		{ return NUMBER; 	}

@@ -18,5 +18,7 @@ struct vm {
 };
 
 struct vm* alloc_vm(int memsize, int stacksize);
+int load_file(struct vm *v, FILE *fd);
+int run(struct vm *v);
 
 #endif

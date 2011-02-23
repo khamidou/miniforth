@@ -81,6 +81,23 @@ int first_pass() {
 				l = alloc_label(yytext, current_offset);
 				append_label(l, label_head);
 				break;
+
+			case T_DB: 
+				yylex();
+				t = yylex();
+
+				if (t != T_TIMES) 
+					fail("Expected a times keyword after db directive");
+
+				t = yylex();
+
+				if (t != NUMBER)
+					fail("Expected a number after times");
+				
+				current_offset += atoi(yytext);
+				break;
+
+
 			default:
 				current_offset++;
 				break;
@@ -91,6 +108,8 @@ int first_pass() {
 int parse() {
 	int t;
 	int current_offset = 0; /* the offset in the generated binary file */
+	int val;
+	int i, max_iter;
 	int s;
 	struct label *l;
 
@@ -153,6 +172,27 @@ int parse() {
 				writeint(JMP, outfp);
 				writeint(l->offset, outfp);
 				break;
+
+			case T_DB: 
+				yylex();
+				val = atoi(yytext);
+				t = yylex();
+
+				if (t != T_TIMES) 
+					fail("Expected a times keyword after db directive");
+
+				t = yylex();
+
+				if (t != NUMBER)
+					fail("Expected a number after times");
+				
+				max_iter = atoi(yytext);
+
+				for(i = 1; i <= max_iter; i++)
+					writeint(val, outfp);
+				break;
+
+				
 
 			default:
 				fail("unexpected %s in input at line %d", yytext, yylineno);

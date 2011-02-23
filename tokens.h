@@ -12,6 +12,10 @@ enum tokens {	NUMBER,
 		T_DEC, 
 		T_CALL, 
 		T_RET,
-		T_JMP}; 
+		T_JMP,
+		T_DB,
+		T_TIMES,
+		
+		}; 
 
 #endif
