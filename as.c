@@ -119,15 +119,10 @@ int parse() {
 				yylex();
 				writeint(PUSH, outfp);
 				writeint(atoi(yytext), outfp);
-				current_offset++; /* 	we're pushing to values to the file, so update
-							current_offset accordingly
-							*/
 				break;
 
 			case T_POP:
-				yylex();
 				writeint(POP, outfp);
-				writeint(atoi(yytext), outfp);
 				break;
 
 			case T_DPRINT:
@@ -173,6 +168,39 @@ int parse() {
 				writeint(l->offset, outfp);
 				break;
 
+			case T_PEEK:
+				t = yylex();
+				if (t == WORD) {
+					l = search_label(yytext);
+					if (l == NULL)
+						fail("the label %s doesn't exists", yytext);
+					val = l->offset;
+				} else if (t == NUMBER) {
+					val = atoi(yytext);
+				}
+
+				writeint(PEEK, outfp);
+				writeint(val, outfp);
+				break;
+
+			case T_POKE:
+				t = yylex();
+				if (t == WORD) {
+					l = search_label(yytext);
+					if (l == NULL)
+						fail("the label %s doesn't exists", yytext);
+
+					printf("%s:%d", l->name, l->offset);
+					val = l->offset;
+				} else if (t == NUMBER) {
+					val = atoi(yytext);
+				}
+
+				writeint(POKE, outfp);
+				writeint(val, outfp);
+				break;
+
+
 			case T_DB: 
 				yylex();
 				val = atoi(yytext);
@@ -191,8 +219,6 @@ int parse() {
 				for(i = 1; i <= max_iter; i++)
 					writeint(val, outfp);
 				break;
-
-				
 
 			default:
 				fail("unexpected %s in input at line %d", yytext, yylineno);

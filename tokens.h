@@ -15,6 +15,8 @@ enum tokens {	NUMBER,
 		T_JMP,
 		T_DB,
 		T_TIMES,
+		T_PEEK,
+		T_POKE,
 		
 		}; 
 

@@ -24,6 +24,8 @@
 "jmp"		{ return T_JMP;		}
 "db"		{ return T_DB;		}
 "times"		{ return T_TIMES;	}
+"peek"		{ return T_PEEK;	}
+"poke"		{ return T_POKE;	}
 [ \t\n]+ 	/* ignore whitespace */
 
 [0-9]+		{ return NUMBER; 	}

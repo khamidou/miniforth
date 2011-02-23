@@ -36,12 +36,27 @@ int load_file(struct vm *v, FILE *fd)
 	fread(v->mem, sizeof(int), v->memsize, fd);
 }
 
+int dump_mem(struct vm *v) 
+{
+	/* display the contents of the memory of a vm */
+	int offset;
+	for(offset = 0; offset < v->memsize - 3; offset += 4) {
+		printf("%xh:\t%d\t%d\t%d\t%d\n", offset, v->mem[offset], v->mem[offset+1],
+						v->mem[offset+2], v->mem[offset+3]);
+	} 
+
+	for (; offset < v->memsize; offset++) {
+		printf("%d\t", v->mem[offset]);
+	}
+}
+
 int run(struct vm *v)
 {
 	if (v == NULL)
 		return -1;
 
 	int *ip = v->mem;
+	int *addr; /* a temporary address */
 	while(ip < v->mem + v->memsize) {
 		switch(*ip) {
 			case NOP:
@@ -88,20 +103,34 @@ int run(struct vm *v)
 				break;
 
 			case RET:
-				/* get ip from the stack. it must be the thing just before
-				 * the top of the stack - it implies that programs must return
-				 * one and only one return value
-				 */
 				if (v->callstackoffset < 0) 
 					fail("call stack underflow");
 			
-				ip = v->callstack[v->callstackoffset];
+				ip = (int *) v->callstack[v->callstackoffset];
 				v->callstackoffset--;
 				break;
 
 			case JMP:
 				ip++;
 				ip = v->mem + (*ip) - 1; /* because the pointer gets automatically incremented */
+				break;
+
+			case PEEK:
+				ip++;
+				v->stackoffset++;
+				if (v->stackoffset >= v->stacksize)
+					fail("peek: stack overflow");
+
+				v->stack[v->stackoffset] = *(v->mem + *ip); 
+				break;
+
+			case POKE:
+				ip++;
+				if (v->stackoffset < 0)
+					fail("poke: stack underflow");
+
+				addr = v->mem + *ip;
+				*addr = v->stack[v->stackoffset];
 				break;
 
 		}
