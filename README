@@ -6,4 +6,20 @@ source code.
 
 = format of binary files
 
+There is no real format. The assembler simply reads the
+files and spits binary code corresponding to the direct
+ives he has read.
 
+= the assembler opcodes
+
+PUSH: followed by a value. Pushes this value on the stack 
+POP: pop a value off the stack
+NOP: do nothing
+DPRINT: Debug PRINT; print the top of the stack
+INC: increment the value on top of the stack
+DEC: decrement the same value
+CALL: syn: call label; calls the label
+RET: return to the caller
+JMP: jump inconditionally to a label.
+
+To see those opcodes used, see the tests directory.
