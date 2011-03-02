@@ -31,5 +31,6 @@
 [0-9]+		{ return NUMBER; 	}
 [a-zA-Z][a-zA-Z0-9]*:	{ return T_LABEL;	}
 [a-zA-Z][a-zA-Z0-9]*	{ return WORD;	}
+\".+\"			{ return STRING;	}
 
 <<EOF>>		{ return -1; 		}

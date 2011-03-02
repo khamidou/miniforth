@@ -3,6 +3,7 @@
 
 enum tokens {	NUMBER, 
 		WORD, 
+		STRING,
 		T_LABEL, 
 		T_PUSH, 
 		T_POP, 

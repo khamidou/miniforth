@@ -87,14 +87,18 @@ int first_pass() {
 				t = yylex();
 
 				if (t != T_TIMES) 
-					fail("Expected a times keyword after db directive");
-
+					fail("Expected a times keyword or a string after db directive");
+				
 				t = yylex();
 
 				if (t != NUMBER)
 					fail("Expected a number after times");
 				
 				current_offset += atoi(yytext);
+				break;
+
+			case STRING:
+				current_offset += strlen(yytext);
 				break;
 
 
@@ -218,8 +222,15 @@ int parse() {
 
 				for(i = 1; i <= max_iter; i++)
 					writeint(val, outfp);
+				
 				break;
+							
+			case STRING:
+				/* output the string in raw form to the file */
+				for(i = 0; i < strlen(yytext); i++)
+					writeint(yytext[i], outfp);
 
+				break;
 			default:
 				fail("unexpected %s in input at line %d", yytext, yylineno);
 				break;
